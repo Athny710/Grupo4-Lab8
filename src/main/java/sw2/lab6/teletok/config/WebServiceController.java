@@ -1,54 +1,84 @@
 package sw2.lab6.teletok.config;
 
-import oracle.jrockit.jfr.openmbean.ProducerDescriptorType;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javafx.geometry.Pos;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import sw2.lab6.teletok.dto.DetallePost;
+import sw2.lab6.teletok.dto.ListaPosts;
+import sw2.lab6.teletok.entity.Post;
+import sw2.lab6.teletok.repository.PostRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import oracle.jrockit.jfr.openmbean.ProducerDescriptorType;
+import javafx.geometry.Pos;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-
 import sw2.lab6.teletok.entity.Token;
 import sw2.lab6.teletok.entity.User;
 import sw2.lab6.teletok.repository.TokenRepository;
 import sw2.lab6.teletok.repository.UserRepository;
-
 import org.springframework.web.multipart.MultipartFile;
-import sw2.lab6.teletok.entity.Post;
 import sw2.lab6.teletok.entity.PostComment;
 import sw2.lab6.teletok.entity.StorageServices;
-import sw2.lab6.teletok.entity.Token;
 import sw2.lab6.teletok.repository.PostCommentRepository;
-import sw2.lab6.teletok.repository.PostRepository;
-import sw2.lab6.teletok.repository.TokenRepository;
-
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-
-import java.util.Optional;
 import java.util.UUID;
-
-import sw2.lab6.teletok.entity.Post;
-
-
-
-
-import java.util.List;
-import java.util.Optional;
-
 
 @RestController
 @CrossOrigin
 @RequestMapping ("/ws")
 public class WebServiceController {
+
+
+    @Autowired
+    PostRepository postRepository;
+
+    //localhost:8080/teletok/ws/post/list
+    @GetMapping(value = "/ws/post/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity obtenerPosts(@RequestParam("query") String query) {
+        HashMap<String, Object> responseMap = new HashMap<>();
+
+        List<ListaPosts> listaPosts;
+        if (query.equals("")){
+            listaPosts = postRepository.obtenerTodos();
+        }else {
+            listaPosts = postRepository.obtenerPorBusqueda1(query);
+        }
+
+        if (listaPosts.size() >= 1) {
+            responseMap.put("estado", "ok");
+            responseMap.put("post", listaPosts);
+            return new ResponseEntity(responseMap, HttpStatus.OK);
+        } else {
+            responseMap.put("estado", "error");
+            responseMap.put("msg", "no se encontró el post con descripcion o usuario: " + query);
+            return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+    @GetMapping(value = "/ws/post/list?/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity obtenerPersonaje(@PathVariable("id") String id,@RequestParam("token") String token) {
+        HashMap<String, Object> responseMap = new HashMap<>();
+
+        List<ListaPosts> listaPosts = postRepository.obtenerPostFiltrado(id);
+        List<DetallePost> listaDetalle = postRepository.obtenerDetalle(id);
+
+        if (listaPosts.size() >= 1) {
+            responseMap.put("estado", "ok");
+            responseMap.put("post", listaPosts);
+            responseMap.put("detalle", listaDetalle);
+            return new ResponseEntity(responseMap, HttpStatus.OK);
+        } else {
+            responseMap.put("estado", "error");
+            responseMap.put("msg", "no se encontró el post con el id: " + id);
+            return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
+        }
+    }
 
 
     @Autowired
@@ -105,8 +135,6 @@ public class WebServiceController {
         return new ResponseEntity(hashMap, httpStatus);
     }
 
-    @Autowired
-    PostRepository postRepository;
     @Autowired
     PostCommentRepository postCommentRepository;
 

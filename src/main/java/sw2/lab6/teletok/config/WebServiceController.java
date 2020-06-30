@@ -62,10 +62,12 @@ public class WebServiceController {
         Optional<User> opt = userRepository.findByUsername(u.getUsername());
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        boolean match = passwordEncoder.matches(opt.get().getPassword(), u.getPassword());
+        boolean match = passwordEncoder.matches(u.getPassword(), opt.get().getPassword());
         String tok = null;
         if(opt.isPresent()){
+            System.out.println(u.getUsername() + u.getPassword());
             if(match){
+
                 hashMap.put("status", "AUTHENTICATED");
                 hashMap.put("token", "asldkhaslkdalskdj");
                 httpStatus = HttpStatus.OK;
@@ -75,6 +77,7 @@ public class WebServiceController {
                 tokenRepository.save(token);
             }else{
                 hashMap.put("error", "AUTH_FAILED");
+                hashMap.put("sdlkasj", "alsd");
             }
         }else{
             hashMap.put("error", "AUTH_FAILED");

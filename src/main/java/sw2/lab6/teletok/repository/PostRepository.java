@@ -31,4 +31,5 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<ListaPosts> obtenerPorBusqueda(String descripcion, String nombre);
 
 
+
 }

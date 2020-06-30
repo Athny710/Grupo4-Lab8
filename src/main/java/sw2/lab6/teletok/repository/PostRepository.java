@@ -8,6 +8,7 @@ import sw2.lab6.teletok.dto.ListaPosts;
 import sw2.lab6.teletok.entity.Post;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
@@ -29,6 +30,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "inner join user uspl on pl.user_id = uspl.id and p.description = ?1 or us.fullname = ?2\n" +
             "order by p.creation_date desc", nativeQuery = true)
     List<ListaPosts> obtenerPorBusqueda(String descripcion, String nombre);
+
 
     @Query(value = "select p.description as descripcion, p.creation_date as creation_date, p.media_url as media_Url,uspm.username as username, count(pl.id) as likeCount, count(pc.message) as commentCount  from post p\n" +
             "inner join post_comment pc on p.id = pc.post_id\n" +
@@ -65,5 +67,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "inner join user uspl on pl.user_id = uspl.id\n" +
             "order by p.creation_date desc", nativeQuery = true)
     List<ListaPosts> obtenerPostFiltrado(String id);
+
 
 }

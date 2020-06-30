@@ -7,6 +7,7 @@ import sw2.lab6.teletok.dto.ListaPosts;
 import sw2.lab6.teletok.entity.Post;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
@@ -28,5 +29,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "inner join user uspl on pl.user_id = uspl.id and p.description = ?1 or us.fullname = ?2\n" +
             "order by p.creation_date desc", nativeQuery = true)
     List<ListaPosts> obtenerPorBusqueda(String descripcion, String nombre);
+
 
 }

@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -59,15 +61,16 @@ public class WebServiceController {
         HashMap<String, Object> hashMap = new HashMap<>();
         Optional<User> opt = userRepository.findByUsername(u.getUsername());
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        boolean match = passwordEncoder.matches(opt.get().getPassword(), u.getPassword());
         String tok = null;
         if(opt.isPresent()){
-            User us = opt.get();
-            if(us.getPassword().equals(u.getPassword())){
+            if(match){
                 hashMap.put("status", "AUTHENTICATED");
                 hashMap.put("token", "asldkhaslkdalskdj");
                 httpStatus = HttpStatus.OK;
                 Token token= new Token();
-                token.setUser(us);
+                token.setUser(opt.get());
                 token.setCode(tok);
                 tokenRepository.save(token);
             }else{
@@ -81,8 +84,22 @@ public class WebServiceController {
 
     @PostMapping(value = "/like/{token}/{postId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity like(@PathVariable("token") String tok, @PathVariable("postId") int postId){
-
-        git
+        HashMap<String, Object> hashMap = new HashMap<>();
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        Optional<Post> opt2 = postRepository.findById(postId);
+        Optional<Token> opt = tokenRepository.findByCode(tok);
+        if(opt.isPresent()){
+            if(opt2.isPresent()){
+                hashMap.put("likeId", opt2.get().getId());
+                hashMap.put("status", "LIKE_CREATED");
+                httpStatus = HttpStatus.OK;
+            }else{
+                hashMap.put("error", "POST_NOT_FOUND");
+            }
+        }else{
+            hashMap.put("error", "TOKEN_INVALID");
+        }
+        return new ResponseEntity(hashMap, httpStatus);
     }
 
     @Autowired

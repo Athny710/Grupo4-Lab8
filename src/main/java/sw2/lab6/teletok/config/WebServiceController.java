@@ -59,12 +59,12 @@ public class WebServiceController {
         HashMap<String, Object> hashMap = new HashMap<>();
         Optional<User> opt = userRepository.findByUsername(u.getUsername());
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-        String tok = null;
+        String tok = UUID.randomUUID().toString();
         if(opt.isPresent()){
             User us = opt.get();
             if(us.getPassword().equals(u.getPassword())){
                 hashMap.put("status", "AUTHENTICATED");
-                hashMap.put("token", "asldkhaslkdalskdj");
+                hashMap.put("token", tok);
                 httpStatus = HttpStatus.OK;
                 Token token= new Token();
                 token.setUser(us);
@@ -81,8 +81,8 @@ public class WebServiceController {
 
     @PostMapping(value = "/like/{token}/{postId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity like(@PathVariable("token") String tok, @PathVariable("postId") int postId){
-
-        git
+        HashMap<String, Object> hashMap = new HashMap<>();
+        return new ResponseEntity(hashMap, HttpStatus.OK);
     }
 
     @Autowired
@@ -110,13 +110,16 @@ public class WebServiceController {
                 List<Post> posts = postRepository.findAll();
                 responseMap.put("postId", posts.get(posts.size()-1));
                 responseMap.put("status", "POST_CREATED");
+                return new ResponseEntity(responseMap, HttpStatus.OK);
             }else{
                 responseMap.put("error", map.get("msg"));
+                return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
             }
         }else{
             responseMap.put("error", "TOKEN_INVALID");
+            return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity(responseMap, HttpStatus.CREATED);
+
     }
 
     @PostMapping(value = "/post/comment", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -135,13 +138,16 @@ public class WebServiceController {
                 List<PostComment> postComments = postCommentRepository.findAll();
                 responseMap.put("commentId", postComments.get(postComments.size()-1));
                 responseMap.put("status", "COMMENT_CREATED");
+                return new ResponseEntity(responseMap, HttpStatus.OK);
             }else {
                 responseMap.put("error", "POST_NOT_FOUND");
+                return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
             }
         }else{
             responseMap.put("error", "TOKEN_INVALID");
+            return new ResponseEntity(responseMap, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity(responseMap, HttpStatus.CREATED);
+
     }
 
 
